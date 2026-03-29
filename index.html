@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CarbonXchange — Green Credit Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #0d3b2e;
+    --leaf:   #1a6b4a;
+    --mint:   #2db87a;
+    --lime:   #7ed957;
+    --cream:  #f5f0e8;
+    --sand:   #e8e0d0;
+    --bark:   #8b6f47;
+    --sky:    #b8e4d0;
+    --gold:   #c9a84c;
+    --fog:    rgba(245,240,232,0.06);
+    --glass:  rgba(13,59,46,0.6);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--forest);
+    color: var(--cream);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 10% 20%, rgba(26,107,74,0.35) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 90% 70%, rgba(45,184,122,0.12) 0%, transparent 55%),
+      radial-gradient(ellipse 40% 40% at 50% 100%, rgba(126,217,87,0.08) 0%, transparent 50%);
+    pointer-events: none; z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none; z-index: 0; opacity: 0.6;
+  }
+
+  .z1 { position: relative; z-index: 1; }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    backdrop-filter: blur(20px);
+    background: rgba(13,59,46,0.85);
+    border-bottom: 1px solid rgba(126,217,87,0.15);
+    padding: 0 40px; height: 64px;
+    display: flex; align-items: center;
+    flex-wrap: wrap; gap: 8px;
+  }
+
+  .nav-logo {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 22px; font-weight: 700;
+    color: var(--cream); text-decoration: none;
+    margin-right: auto;
+  }
+
+  .nav-logo .leaf-icon {
+    width: 32px; height: 32px;
+    background: linear-gradient(135deg, var(--mint), var(--lime));
+    border-radius: 8px 8px 8px 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .nav-tabs {
+    display: flex; gap: 2px;
+    background: var(--fog);
+    border-radius: 10px; padding: 4px;
+  }
+
+  .nav-tab {
+    padding: 7px 16px; border-radius: 7px;
+    border: none; background: transparent;
+    color: rgba(245,240,232,0.55);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  }
+  .nav-tab:hover { color: var(--cream); background: rgba(245,240,232,0.08); }
+  .nav-tab.active { background: var(--mint); color: var(--forest); font-weight: 600; }
+
+  .nav-user {
+    display: flex; align-items: center; gap: 10px;
+    margin-left: 16px; font-size: 13px;
+    color: rgba(245,240,232,0.6);
+  }
+
+  .nav-avatar {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--leaf), var(--mint));
+    border: 2px solid rgba(126,217,87,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: var(--cream); cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* PAGE SYSTEM */
+  .page { display: none; }
+  .page.active { display: block; animation: fadeUp 0.4s ease; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .container { max-width: 1200px; margin: 0 auto; padding: 40px; }
+
+  /* HERO */
+  .hero {
+    padding: 70px 40px 50px;
+    max-width: 1200px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 380px;
+    gap: 60px; align-items: center;
+  }
+
+  @media (max-width: 900px) {
+    .hero { grid-template-columns: 1fr; padding: 40px 20px; }
+    .hero-panel { display: none; }
+    nav { padding: 0 16px; height: auto; padding-top: 10px; padding-bottom: 10px; }
+    .nav-tabs { flex-wrap: wrap; }
+    .container { padding: 20px; }
+    .projects-grid { grid-template-columns: 1fr; }
+    .portfolio-summary { grid-template-columns: 1fr 1fr; }
+    .sim-grid { grid-template-columns: 1fr; }
+  }
+
+  .hero-eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(45,184,122,0.15);
+    border: 1px solid rgba(45,184,122,0.3);
+    border-radius: 100px; padding: 5px 14px 5px 8px;
+    font-size: 12px; font-weight: 500; color: var(--mint);
+    margin-bottom: 22px; width: fit-content;
+  }
+
+  .hero-eyebrow .dot {
+    width: 7px; height: 7px;
+    background: var(--mint); border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:0.5; transform:scale(0.8); }
+  }
+
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(32px, 4vw, 58px); font-weight: 700;
+    line-height: 1.1; color: var(--cream); margin-bottom: 18px;
+  }
+  .hero h1 em { font-style: italic; color: var(--mint); }
+
+  .hero-sub {
+    font-size: 16px; line-height: 1.7;
+    color: rgba(245,240,232,0.65);
+    margin-bottom: 32px; font-weight: 300; max-width: 460px;
+  }
+
+  .hero-actions { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+
+  .btn-hero {
+    padding: 13px 28px; border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 600;
+    cursor: pointer; transition: all 0.25s; border: none;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--mint), var(--lime));
+    color: var(--forest);
+    box-shadow: 0 4px 20px rgba(45,184,122,0.35);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(45,184,122,0.45); }
+
+  .btn-secondary {
+    background: rgba(245,240,232,0.08);
+    color: var(--cream);
+    border: 1px solid rgba(245,240,232,0.18);
+  }
+  .btn-secondary:hover { background: rgba(245,240,232,0.13); }
+
+  /* Hero Panel */
+  .hero-panel {
+    background: rgba(13,59,46,0.7);
+    border: 1px solid rgba(45,184,122,0.2);
+    border-radius: 20px; padding: 28px;
+    backdrop-filter: blur(16px);
+  }
+
+  .panel-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 22px;
+  }
+  .panel-title { font-size: 13px; font-weight: 500; color: rgba(245,240,232,0.55); text-transform: uppercase; letter-spacing: 0.08em; }
+  .panel-live {
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--mint);
+  }
+  .panel-live::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--mint); border-radius: 50%;
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  .stat-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(245,240,232,0.07);
+  }
+  .stat-row:last-child { border-bottom: none; }
+  .stat-label { font-size: 13px; color: rgba(245,240,232,0.5); }
+  .stat-value { font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500; color: var(--cream); }
+  .stat-value.up { color: var(--mint); }
+
+  .stat-bar-wrap { margin-top: 8px; }
+  .stat-bar-label { display: flex; justify-content: space-between; font-size: 11px; color: rgba(245,240,232,0.4); margin-bottom: 6px; }
+  .stat-bar-track { height: 4px; background: rgba(245,240,232,0.08); border-radius: 4px; overflow: hidden; }
+  .stat-bar-fill { height: 100%; border-radius: 4px; transition: width 1.2s cubic-bezier(0.22,1,0.36,1); width: 0; }
+
+  /* SECTION */
+  .section-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 28px;
+  }
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 28px; font-weight: 600;
+  }
+  .section-sub { font-size: 14px; color: rgba(245,240,232,0.5); margin-top: 4px; }
+
+  /* FILTER BAR */
+  .filter-bar {
+    display: flex; gap: 10px; margin-bottom: 28px; flex-wrap: wrap; align-items: center;
+  }
+  .filter-chip {
+    padding: 6px 16px; border-radius: 100px;
+    border: 1px solid rgba(245,240,232,0.15);
+    background: transparent; color: rgba(245,240,232,0.55);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .filter-chip:hover { border-color: var(--mint); color: var(--mint); }
+  .filter-chip.active { background: rgba(45,184,122,0.15); border-color: var(--mint); color: var(--mint); }
+
+  .search-wrap { margin-left: auto; position: relative; }
+  .search-input {
+    background: rgba(245,240,232,0.06);
+    border: 1px solid rgba(245,240,232,0.12);
+    border-radius: 8px; padding: 7px 12px 7px 34px;
+    color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    width: 200px; outline: none; transition: border-color 0.2s;
+  }
+  .search-input:focus { border-color: rgba(45,184,122,0.4); }
+  .search-input::placeholder { color: rgba(245,240,232,0.3); }
+  .search-icon {
+    position: absolute; left: 10px; top: 50%;
+    transform: translateY(-50%); font-size: 14px; pointer-events: none;
+  }
+
+  /* PROJECT CARDS */
+  .projects-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;
+  }
+
+  @media (max-width: 1024px) {
+    .projects-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .project-card {
+    background: rgba(13,59,46,0.55);
+    border: 1px solid rgba(45,184,122,0.12);
+    border-radius: 16px; overflow: hidden;
+    cursor: pointer; transition: all 0.3s;
+  }
+  .project-card:hover {
+    border-color: rgba(45,184,122,0.35);
+    transform: translateY(-4px);
+    box-shadow: 0 16px 40px rgba(0,0,0,0.3);
+  }
+
+  .card-banner { height: 80px; position: relative; overflow: hidden; }
+  .card-banner-overlay {
+    position: absolute; inset: 0;
+    background: linear-gradient(to bottom, transparent 40%, rgba(13,59,46,0.8));
+  }
+  .card-badge {
+    position: absolute; top: 10px; left: 12px;
+    background: rgba(13,59,46,0.75); border: 1px solid rgba(245,240,232,0.2);
+    border-radius: 6px; padding: 3px 8px;
+    font-size: 11px; font-weight: 500; color: var(--cream);
+    backdrop-filter: blur(8px);
+  }
+  .card-verified { position: absolute; top: 10px; right: 12px; font-size: 14px; }
+
+  .card-body { padding: 18px; }
+  .card-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 17px; font-weight: 600;
+    margin-bottom: 4px; line-height: 1.3;
+  }
+  .card-meta { font-size: 12px; color: rgba(245,240,232,0.45); margin-bottom: 12px; }
+
+  .card-tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 14px; }
+  .tag {
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 11px; font-weight: 500;
+    background: rgba(45,184,122,0.12); color: var(--mint);
+    border: 1px solid rgba(45,184,122,0.2);
+  }
+
+  .card-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 14px; border-top: 1px solid rgba(245,240,232,0.07);
+  }
+  .price-amount { font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500; color: var(--cream); }
+  .price-unit { font-size: 11px; color: rgba(245,240,232,0.4); }
+
+  .btn-buy {
+    padding: 8px 20px; border-radius: 8px; border: none;
+    background: linear-gradient(135deg, var(--mint), var(--lime));
+    color: var(--forest); font-family: 'DM Sans', sans-serif;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-buy:hover { transform: scale(1.05); box-shadow: 0 4px 16px rgba(45,184,122,0.4); }
+
+  .avail-bar { padding: 14px 18px 16px; }
+  .avail-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: rgba(245,240,232,0.4); margin-bottom: 6px;
+  }
+  .avail-track { height: 3px; background: rgba(245,240,232,0.08); border-radius: 3px; overflow: hidden; }
+  .avail-fill { height: 100%; background: linear-gradient(90deg, var(--mint), var(--lime)); border-radius: 3px; }
+
+  /* LEDGER */
+  .ledger-controls { display: flex; gap: 12px; margin-bottom: 20px; align-items: center; flex-wrap: wrap; }
+  .ledger-search {
+    flex: 1; min-width: 200px;
+    background: rgba(245,240,232,0.06);
+    border: 1px solid rgba(245,240,232,0.12); border-radius: 8px;
+    padding: 9px 14px; color: var(--cream);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none;
+  }
+  .ledger-search:focus { border-color: rgba(45,184,122,0.4); }
+  .ledger-search::placeholder { color: rgba(245,240,232,0.3); }
+
+  .btn-export {
+    padding: 9px 18px; border-radius: 8px;
+    border: 1px solid rgba(245,240,232,0.18);
+    background: rgba(245,240,232,0.06); color: var(--cream);
+    font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;
+    white-space: nowrap;
+  }
+  .btn-export:hover { background: rgba(245,240,232,0.12); }
+
+  .table-wrap {
+    background: rgba(13,59,46,0.5);
+    border: 1px solid rgba(45,184,122,0.12);
+    border-radius: 14px; overflow: auto;
+  }
+  table { width: 100%; border-collapse: collapse; min-width: 700px; }
+  thead tr { background: rgba(245,240,232,0.04); border-bottom: 1px solid rgba(245,240,232,0.08); }
+  th {
+    padding: 12px 16px; text-align: left;
+    font-size: 11px; font-weight: 600;
+    color: rgba(245,240,232,0.4); text-transform: uppercase; letter-spacing: 0.07em;
+    white-space: nowrap;
+  }
+  td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid rgba(245,240,232,0.05); white-space: nowrap; }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(245,240,232,0.03); }
+
+  .td-mono { font-family: 'DM Mono', monospace; font-size: 12px; color: rgba(245,240,232,0.5); }
+  .td-primary { font-weight: 500; }
+
+  .tx-type {
+    display: inline-block; padding: 2px 10px; border-radius: 5px;
+    font-size: 11px; font-weight: 600;
+  }
+  .tx-buy    { background: rgba(45,184,122,0.15); color: var(--mint); }
+  .tx-sell   { background: rgba(201,168,76,0.15); color: var(--gold); }
+  .tx-retire { background: rgba(184,228,208,0.12); color: var(--sky); }
+
+  /* PORTFOLIO */
+  .portfolio-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px;
+  }
+  @media (max-width: 768px) {
+    .portfolio-summary { grid-template-columns: repeat(2, 1fr); }
+  }
+  .summary-card {
+    background: rgba(13,59,46,0.6);
+    border: 1px solid rgba(45,184,122,0.12);
+    border-radius: 12px; padding: 18px 20px;
+  }
+  .summary-label { font-size: 12px; color: rgba(245,240,232,0.45); margin-bottom: 8px; }
+  .summary-value { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--cream); }
+  .summary-change { font-size: 12px; color: var(--mint); margin-top: 4px; }
+
+  .holdings-list { display: flex; flex-direction: column; gap: 12px; }
+  .holding-card {
+    background: rgba(13,59,46,0.55);
+    border: 1px solid rgba(45,184,122,0.12);
+    border-radius: 12px; padding: 18px 22px;
+    display: flex; justify-content: space-between; align-items: center;
+    transition: border-color 0.2s; flex-wrap: wrap; gap: 16px;
+  }
+  .holding-card:hover { border-color: rgba(45,184,122,0.25); }
+
+  .holding-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+  .holding-meta { font-size: 12px; color: rgba(245,240,232,0.45); margin-bottom: 12px; }
+
+  .holding-actions { display: flex; gap: 8px; }
+  .btn-sec {
+    padding: 6px 14px; border-radius: 7px;
+    border: 1px solid rgba(245,240,232,0.2);
+    background: transparent; color: rgba(245,240,232,0.7);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-sec:hover { background: rgba(245,240,232,0.08); }
+  .btn-danger {
+    padding: 6px 14px; border-radius: 7px;
+    border: 1px solid rgba(201,168,76,0.3);
+    background: rgba(201,168,76,0.08); color: var(--gold);
+    font-family: 'DM Sans', sans-serif; font-size: 12px; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .btn-danger:hover { background: rgba(201,168,76,0.15); }
+
+  .holding-right { text-align: right; }
+  .holding-qty { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--cream); }
+  .holding-unit { font-size: 11px; color: rgba(245,240,232,0.35); margin-bottom: 4px; }
+  .holding-value { font-family: 'DM Mono', monospace; font-size: 14px; color: var(--mint); }
+
+  /* SIMULATE */
+  .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 768px) { .sim-grid { grid-template-columns: 1fr; } }
+
+  .sim-panel {
+    background: rgba(13,59,46,0.55);
+    border: 1px solid rgba(45,184,122,0.12);
+    border-radius: 16px; padding: 28px;
+  }
+  .sim-panel h3 {
+    font-family: 'Playfair Display', serif; font-size: 18px;
+    margin-bottom: 22px; color: var(--cream);
+  }
+
+  .form-group { margin-bottom: 18px; }
+  .form-label {
+    font-size: 12px; font-weight: 500; color: rgba(245,240,232,0.5);
+    margin-bottom: 7px; display: block; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .form-control {
+    width: 100%;
+    background: rgba(245,240,232,0.06);
+    border: 1px solid rgba(245,240,232,0.12);
+    border-radius: 8px; padding: 9px 13px;
+    color: var(--cream); font-family: 'DM Sans', sans-serif; font-size: 13px;
+    outline: none; transition: border-color 0.2s; appearance: none;
+    -webkit-appearance: none;
+  }
+  .form-control:focus { border-color: rgba(45,184,122,0.4); }
+  /* Fix select arrow on webkit */
+  select.form-control {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23f5f0e8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+  /* Fix select option colors */
+  select.form-control option { background: #0d3b2e; color: #f5f0e8; }
+
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 480px) { .form-row { grid-template-columns: 1fr; } }
+
+  .btn-run {
+    width: 100%; padding: 13px;
+    border-radius: 10px; border: none;
+    background: linear-gradient(135deg, var(--mint), var(--lime));
+    color: var(--forest); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    transition: all 0.25s; margin-top: 6px;
+  }
+  .btn-run:hover { box-shadow: 0 6px 20px rgba(45,184,122,0.4); transform: translateY(-1px); }
+
+  .sim-log {
+    background: rgba(0,0,0,0.35);
+    border: 1px solid rgba(45,184,122,0.1);
+    border-radius: 10px; padding: 16px;
+    font-family: 'DM Mono', monospace; font-size: 12px; line-height: 1.7;
+    height: 220px; overflow-y: auto; margin-bottom: 20px;
+    color: rgba(245,240,232,0.6);
+  }
+  .log-line { display: flex; gap: 12px; }
+  .log-time { color: rgba(245,240,232,0.25); flex-shrink: 0; }
+  .log-text.ok  { color: var(--mint); }
+  .log-text.hdr { color: var(--lime); font-weight: 500; }
+  .log-text.tx  { color: rgba(245,240,232,0.75); }
+
+  .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .result-item {
+    background: rgba(245,240,232,0.04);
+    border: 1px solid rgba(245,240,232,0.07);
+    border-radius: 8px; padding: 12px;
+  }
+  .result-label { font-size: 11px; color: rgba(245,240,232,0.4); margin-bottom: 5px; }
+  .result-value { font-family: 'DM Mono', monospace; font-size: 14px; font-weight: 500; color: var(--cream); word-break: break-all; }
+
+  .session-stats {
+    background: rgba(13,59,46,0.6);
+    border: 1px solid rgba(45,184,122,0.15);
+    border-radius: 12px; padding: 20px; margin-top: 20px;
+  }
+  .session-stats h4 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: rgba(245,240,232,0.4); margin-bottom: 14px;
+  }
+  .ss-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 480px) { .ss-grid { grid-template-columns: repeat(2, 1fr); } }
+  .ss-item { text-align: center; }
+  .ss-val { font-family: 'DM Mono', monospace; font-size: 18px; font-weight: 500; color: var(--mint); }
+  .ss-lbl { font-size: 11px; color: rgba(245,240,232,0.4); margin-top: 2px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; z-index: 999;
+    background: rgba(0,0,0,0.6); backdrop-filter: blur(6px);
+    display: none; align-items: center; justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; animation: fadeIn 0.2s ease; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+
+  .modal {
+    background: #0f4234;
+    border: 1px solid rgba(45,184,122,0.25);
+    border-radius: 20px; width: 440px; max-width: 100%;
+    overflow: hidden;
+    animation: slideUp 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+
+  .modal-banner { height: 70px; }
+  .modal-body { padding: 28px; }
+
+  .modal-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .modal-sub { font-size: 13px; color: rgba(245,240,232,0.45); margin-bottom: 22px; }
+
+  .modal-info { margin-bottom: 22px; }
+  .modal-info-row {
+    display: flex; justify-content: space-between;
+    padding: 10px 0; border-bottom: 1px solid rgba(245,240,232,0.07);
+    font-size: 13px;
+  }
+  .modal-info-row:last-child { border-bottom: none; }
+  .mi-label { color: rgba(245,240,232,0.45); }
+  .mi-val { font-weight: 500; }
+  .mi-val.green { color: var(--mint); font-family: 'DM Mono', monospace; }
+
+  .qty-row { display: flex; align-items: center; gap: 10px; margin-bottom: 18px; }
+  .qty-btn {
+    width: 36px; height: 36px; border-radius: 8px;
+    border: 1px solid rgba(245,240,232,0.2);
+    background: rgba(245,240,232,0.06); color: var(--cream);
+    font-size: 18px; cursor: pointer; transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .qty-btn:hover { background: rgba(245,240,232,0.12); }
+  .qty-input {
+    flex: 1; background: rgba(245,240,232,0.06);
+    border: 1px solid rgba(245,240,232,0.15); border-radius: 8px;
+    padding: 9px 13px; color: var(--cream);
+    font-family: 'DM Mono', monospace; font-size: 15px; font-weight: 500;
+    outline: none; text-align: center;
+  }
+  .qty-input:focus { border-color: rgba(45,184,122,0.4); }
+  .qty-label { font-size: 13px; color: rgba(245,240,232,0.4); white-space: nowrap; }
+
+  .total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    background: rgba(45,184,122,0.08); border: 1px solid rgba(45,184,122,0.2);
+    border-radius: 10px; padding: 14px 18px; margin-bottom: 20px;
+  }
+  .total-label { font-size: 14px; color: rgba(245,240,232,0.6); }
+  .total-amount { font-family: 'DM Mono', monospace; font-size: 22px; font-weight: 500; color: var(--mint); }
+
+  .modal-actions { display: flex; gap: 10px; }
+  .btn-cancel {
+    flex: 1; padding: 12px; border-radius: 10px;
+    border: 1px solid rgba(245,240,232,0.18);
+    background: transparent; color: var(--cream);
+    font-family: 'DM Sans', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-cancel:hover { background: rgba(245,240,232,0.06); }
+  .btn-confirm {
+    flex: 2; padding: 12px; border-radius: 10px; border: none;
+    background: linear-gradient(135deg, var(--mint), var(--lime));
+    color: var(--forest); font-family: 'DM Sans', sans-serif;
+    font-size: 14px; font-weight: 700; cursor: pointer; transition: all 0.2s;
+  }
+  .btn-confirm:hover { box-shadow: 0 4px 16px rgba(45,184,122,0.4); transform: translateY(-1px); }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 28px; right: 28px; z-index: 9999;
+    background: rgba(15,66,52,0.95); backdrop-filter: blur(12px);
+    border: 1px solid rgba(45,184,122,0.3); border-radius: 14px;
+    padding: 14px 20px; display: flex; align-items: center; gap: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(80px); opacity: 0;
+    transition: all 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    pointer-events: none; max-width: calc(100vw - 56px);
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast-icon { font-size: 20px; flex-shrink: 0; }
+  .toast-title { font-size: 14px; font-weight: 600; color: var(--cream); }
+  .toast-sub { font-size: 12px; color: rgba(245,240,232,0.5); }
+
+  /* EMPTY STATE */
+  .empty-state {
+    text-align: center; padding: 60px 20px;
+    color: rgba(245,240,232,0.35); font-size: 14px;
+  }
+  .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 5px; height: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(45,184,122,0.3); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="z1">
+  <a class="nav-logo" href="#" onclick="showPage('home');return false;">
+    <div class="leaf-icon">🌿</div>
+    CarbonXchange
+  </a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('home')">Overview</button>
+    <button class="nav-tab" onclick="showPage('market')">Marketplace</button>
+    <button class="nav-tab" onclick="showPage('ledger')">Ledger</button>
+    <button class="nav-tab" onclick="showPage('portfolio')">Portfolio</button>
+    <button class="nav-tab" onclick="showPage('simulate')">Simulate</button>
+  </div>
+  <div class="nav-user">
+    <span>EcoVentures Ltd</span>
+    <div class="nav-avatar" title="EcoVentures Ltd">EV</div>
+  </div>
+</nav>
+
+<!-- HOME -->
+<div id="home" class="page active z1">
+  <div class="hero">
+    <div>
+      <div class="hero-eyebrow">
+        <div class="dot"></div>
+        Carbon markets open &middot; 3,241 active listings
+      </div>
+      <h1>Trade Carbon Credits,<br><em>Build a Greener</em><br>Tomorrow</h1>
+      <p class="hero-sub">
+        Access verified carbon offset projects worldwide. Buy, sell, and retire credits with full transparency — every transaction recorded immutably on the registry.
+      </p>
+      <div class="hero-actions">
+        <button class="btn-hero btn-primary" onclick="showPage('market')">Browse Marketplace &rarr;</button>
+        <button class="btn-hero btn-secondary" onclick="showPage('simulate')">Run Simulation</button>
+      </div>
+    </div>
+
+    <div class="hero-panel">
+      <div class="panel-header">
+        <div class="panel-title">Market Overview</div>
+        <div class="panel-live">LIVE</div>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Total Credits Issued</span>
+        <span class="stat-value up">48.2M tCO&#8322;</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Credits Retired (YTD)</span>
+        <span class="stat-value">12.7M tCO&#8322;</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Avg. Market Price</span>
+        <span class="stat-value up">$14.38 / tCO&#8322;</span>
+      </div>
+      <div class="stat-row">
+        <span class="stat-label">Active Projects</span>
+        <span class="stat-value">1,204</span>
+      </div>
+      <div class="stat-bar-wrap">
+        <div class="stat-bar-label"><span>Renewable Energy</span><span>42%</span></div>
+        <div class="stat-bar-track">
+          <div class="stat-bar-fill" id="bar1" style="background:linear-gradient(90deg,#2db87a,#7ed957)"></div>
+        </div>
+      </div>
+      <div class="stat-bar-wrap" style="margin-top:10px">
+        <div class="stat-bar-label"><span>Forestry &amp; Land</span><span>31%</span></div>
+        <div class="stat-bar-track">
+          <div class="stat-bar-fill" id="bar2" style="background:linear-gradient(90deg,#b8e4d0,#2db87a)"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MARKETPLACE -->
+<div id="market" class="page z1">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Marketplace</div>
+        <div class="section-sub">Verified carbon offset projects available for purchase</div>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-chip active" onclick="filterProjects('all',this)">All Types</button>
+      <button class="filter-chip" onclick="filterProjects('Forestry',this)">Forestry</button>
+      <button class="filter-chip" onclick="filterProjects('Renewable Energy',this)">Renewable Energy</button>
+      <button class="filter-chip" onclick="filterProjects('Clean Cooking',this)">Clean Cooking</button>
+      <div class="search-wrap">
+        <span class="search-icon">&#128269;</span>
+        <input class="search-input" type="text" placeholder="Search projects&hellip;" oninput="searchProjects(this.value)">
+      </div>
+    </div>
+    <div class="projects-grid" id="projectList"></div>
+  </div>
+</div>
+
+<!-- LEDGER -->
+<div id="ledger" class="page z1">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Transaction Ledger</div>
+        <div class="section-sub">Immutable record of all credit transfers and retirements</div>
+      </div>
+    </div>
+    <div class="ledger-controls">
+      <input class="ledger-search" type="text" placeholder="Search by ID, project, or party&hellip;" oninput="filterLedger(this.value)">
+      <button class="btn-export" onclick="exportLedger()">&#11015; Export CSV</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Tx ID</th><th>Type</th><th>From</th><th>To</th>
+            <th>Project</th><th>Credits (tCO&#8322;)</th><th>Value (USD)</th><th>Date</th>
+          </tr>
+        </thead>
+        <tbody id="ledger-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- PORTFOLIO -->
+<div id="portfolio" class="page z1">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-title">My Portfolio</div>
+        <div class="section-sub">Your current carbon credit holdings</div>
+      </div>
+    </div>
+    <div class="portfolio-summary">
+      <div class="summary-card">
+        <div class="summary-label">Total Holdings</div>
+        <div class="summary-value">4,850</div>
+        <div class="summary-change">tCO&#8322; credits</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Portfolio Value</div>
+        <div class="summary-value">$63,420</div>
+        <div class="summary-change">&#8679; +2.4% this week</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Credits Retired</div>
+        <div class="summary-value">1,200</div>
+        <div class="summary-change">tCO&#8322; offset to date</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-label">Active Projects</div>
+        <div class="summary-value">5</div>
+        <div class="summary-change">across 4 regions</div>
+      </div>
+    </div>
+    <div class="holdings-list" id="port-holdings"></div>
+  </div>
+</div>
+
+<!-- SIMULATE -->
+<div id="simulate" class="page z1">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <div class="section-title">Transaction Simulator</div>
+        <div class="section-sub">Test buy, sell, and retirement scenarios</div>
+      </div>
+    </div>
+    <div class="sim-grid">
+      <div class="sim-panel">
+        <h3>Configure Transaction</h3>
+        <div class="form-group">
+          <label class="form-label">Transaction Type</label>
+          <select class="form-control" id="sim-type">
+            <option>Buy</option><option>Sell</option><option>Retire</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Project</label>
+          <select class="form-control" id="sim-project">
+            <option>Amazon Reforestation Block B</option>
+            <option>Rajasthan Solar Farm</option>
+            <option>North Sea Offshore Wind</option>
+            <option>Kenya Cookstoves Initiative</option>
+            <option>Pacific Ocean Wind Array</option>
+          </select>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Buyer Entity</label>
+            <select class="form-control" id="sim-buyer">
+              <option>EcoVentures Ltd</option>
+              <option>GreenFund Capital</option>
+              <option>BlueSky Corp</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Seller Entity</label>
+            <select class="form-control" id="sim-seller">
+              <option>Market Registry</option>
+              <option>EcoVentures Ltd</option>
+              <option>Terra Holdings</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Quantity (tCO&#8322;)</label>
+            <input class="form-control" type="number" id="sim-qty" value="500" min="1">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price / Credit (USD)</label>
+            <input class="form-control" type="number" id="sim-price" value="14.50" step="0.01" min="0.01">
+          </div>
+        </div>
+        <button class="btn-run" onclick="runSimulation()">&#9654; Run Transaction</button>
+      </div>
+
+      <div>
+        <div class="sim-panel" style="margin-bottom:20px">
+          <h3>Execution Log</h3>
+          <div class="sim-log" id="sim-log">
+            <div style="color:rgba(245,240,232,0.25);font-style:italic">Configure and run a transaction to see the log&hellip;</div>
+          </div>
+          <div class="result-grid">
+            <div class="result-item"><div class="result-label">Status</div><div class="result-value" id="r-status">&mdash;</div></div>
+            <div class="result-item"><div class="result-label">Quantity</div><div class="result-value" id="r-qty">&mdash;</div></div>
+            <div class="result-item"><div class="result-label">Unit Price</div><div class="result-value" id="r-price">&mdash;</div></div>
+            <div class="result-item"><div class="result-label">Total Value</div><div class="result-value" id="r-total">&mdash;</div></div>
+            <div class="result-item"><div class="result-label">Offset Applied</div><div class="result-value" id="r-offset">&mdash;</div></div>
+            <div class="result-item"><div class="result-label">Tx ID</div><div class="result-value td-mono" id="r-txid">&mdash;</div></div>
+          </div>
+        </div>
+        <div class="session-stats">
+          <h4>Session Statistics</h4>
+          <div class="ss-grid">
+            <div class="ss-item"><div class="ss-val" id="sess-trades">0</div><div class="ss-lbl">Trades</div></div>
+            <div class="ss-item"><div class="ss-val" id="sess-vol">0</div><div class="ss-lbl">Volume</div></div>
+            <div class="ss-item"><div class="ss-val" id="sess-val">$0</div><div class="ss-lbl">Value</div></div>
+            <div class="ss-item"><div class="ss-val" id="sess-offset">0</div><div class="ss-lbl">Offset</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="buy-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <div class="modal-banner" id="modal-banner"></div>
+    <div class="modal-body">
+      <div class="modal-title" id="modal-title"></div>
+      <div class="modal-sub" id="modal-sub"></div>
+      <div class="modal-info" id="modal-info"></div>
+      <label class="form-label" style="margin-bottom:8px">Quantity (tCO&#8322; credits)</label>
+      <div class="qty-row">
+        <button class="qty-btn" onclick="adjQty(-100)" aria-label="Decrease by 100">&minus;</button>
+        <input class="qty-input" id="modal-qty" type="number" value="100" min="1" aria-label="Credit quantity">
+        <button class="qty-btn" onclick="adjQty(100)" aria-label="Increase by 100">+</button>
+        <span class="qty-label">credits</span>
+      </div>
+      <div class="total-row">
+        <span class="total-label">Total Cost</span>
+        <span class="total-amount" id="modal-total">$0.00</span>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+        <button class="btn-confirm" onclick="confirmBuy()">Confirm Purchase</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast" role="status" aria-live="polite">
+  <div class="toast-icon" id="toast-icon"></div>
+  <div>
+    <div class="toast-title" id="toast-title"></div>
+    <div class="toast-sub" id="toast-sub"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ============================================================
+   DATA
+============================================================ */
+const projects = [
+  { id:1, name:"Amazon Reforestation Block B", loc:"Pará, Brazil",          type:"Forestry",        standard:"VCS",      co_benefit:"CCB Gold", price:18.50, available:42000, avail_pct:68, color:"#1a6b4a", emoji:"🌳" },
+  { id:2, name:"Rajasthan Solar Farm",          loc:"Rajasthan, India",       type:"Renewable Energy", standard:"VCS",      co_benefit:"SD Vista", price:11.20, available:28000, avail_pct:54, color:"#c9a84c", emoji:"☀️" },
+  { id:3, name:"North Sea Offshore Wind",       loc:"North Sea, UK",          type:"Renewable Energy", standard:"VCS",      co_benefit:"SD Vista", price:15.80, available:19500, avail_pct:38, color:"#2db87a", emoji:"💨" },
+  { id:4, name:"Kenya Cookstoves Initiative",   loc:"Nairobi, Kenya",         type:"Clean Cooking",    standard:"Gold Std", co_benefit:"CDM",      price:8.60,  available:65000, avail_pct:82, color:"#8b6f47", emoji:"🔥" },
+  { id:5, name:"Pacific Ocean Wind Array",      loc:"Taiwan Strait",          type:"Renewable Energy", standard:"VCS",      co_benefit:"SD Vista", price:13.90, available:31000, avail_pct:61, color:"#b8e4d0", emoji:"🌊" },
+  { id:6, name:"Borneo Peatland Restoration",   loc:"Kalimantan, Indonesia",  type:"Forestry",        standard:"VCS",      co_benefit:"CCB Gold", price:21.00, available:14000, avail_pct:28, color:"#0d3b2e", emoji:"🌿" },
+];
+
+let filteredProjects = [...projects];
+let activeFilter = 'all';
+
+let ledgerData = [
+  { id:"TX-001", type:"Buy",    from:"Market Registry",  to:"EcoVentures Ltd",   project:"Amazon Reforestation Block B", qty:500,  val:9250,  date:"2025-06-10" },
+  { id:"TX-002", type:"Buy",    from:"Market Registry",  to:"EcoVentures Ltd",   project:"Rajasthan Solar Farm",         qty:1000, val:11200, date:"2025-06-14" },
+  { id:"TX-003", type:"Retire", from:"EcoVentures Ltd",  to:"Registry",          project:"Amazon Reforestation Block B", qty:200,  val:3700,  date:"2025-06-18" },
+  { id:"TX-004", type:"Buy",    from:"Market Registry",  to:"EcoVentures Ltd",   project:"North Sea Offshore Wind",      qty:650,  val:10270, date:"2025-07-02" },
+  { id:"TX-005", type:"Sell",   from:"EcoVentures Ltd",  to:"GreenFund Capital", project:"Kenya Cookstoves Initiative",  qty:300,  val:2580,  date:"2025-07-09" },
+];
+let filteredLedger = [...ledgerData];
+
+let currentProject = null;
+let sessionStats = { trades:0, vol:0, val:0, offset:0 };
+let toastTimer = null;
+
+/* ============================================================
+   NAVIGATION
+============================================================ */
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+
+  const page = document.getElementById(name);
+  if (!page) return;
+  page.classList.add('active');
+
+  const tabs = ['home','market','ledger','portfolio','simulate'];
+  const idx = tabs.indexOf(name);
+  if (idx >= 0) {
+    const navTabs = document.querySelectorAll('.nav-tab');
+    if (navTabs[idx]) navTabs[idx].classList.add('active');
+  }
+
+  if (name === 'market')     renderMarketplace();
+  if (name === 'ledger')     renderLedger(filteredLedger);
+  if (name === 'portfolio')  renderPortfolio();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ============================================================
+   MARKETPLACE
+============================================================ */
+function renderMarketplace() {
+  const container = document.getElementById('projectList');
+  if (!container) return;
+
+  if (filteredProjects.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">🌱</div><p>No projects match your search.</p></div>';
+    return;
+  }
+
+  container.innerHTML = filteredProjects.map(p => `
+    <div class="project-card" onclick="openBuyModal(${p.id})" tabindex="0" role="button" aria-label="View ${p.name}">
+      <div class="card-banner" style="background:linear-gradient(135deg,${p.color},${p.color}88)">
+        <div class="card-banner-overlay"></div>
+        <div class="card-badge">${p.type}</div>
+        <div class="card-verified" title="Verified project">&#9989;</div>
+      </div>
+      <div class="card-body">
+        <div class="card-name">${p.emoji} ${escHtml(p.name)}</div>
+        <div class="card-meta">${escHtml(p.loc)}</div>
+        <div class="card-tags">
+          <span class="tag">${escHtml(p.standard)}</span>
+          <span class="tag">${escHtml(p.co_benefit)}</span>
+        </div>
+        <div class="card-footer">
+          <div class="price-block">
+            <div class="price-amount">$${p.price.toFixed(2)}</div>
+            <div class="price-unit">per tCO&#8322;e</div>
+          </div>
+          <button class="btn-buy" onclick="event.stopPropagation();openBuyModal(${p.id})">Buy</button>
+        </div>
+      </div>
+      <div class="avail-bar">
+        <div class="avail-label">
+          <span>Availability</span>
+          <span>${p.available.toLocaleString()} tCO&#8322; left</span>
+        </div>
+        <div class="avail-track"><div class="avail-fill" style="width:${p.avail_pct}%"></div></div>
+      </div>
+    </div>
+  `).join('');
+
+  // Keyboard support for cards
+  container.querySelectorAll('.project-card').forEach(card => {
+    card.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); card.click(); }
+    });
+  });
+}
+
+function filterProjects(type, btn) {
+  activeFilter = type;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  filteredProjects = type === 'all' ? [...projects] : projects.filter(p => p.type === type);
+  renderMarketplace();
+}
+
+function searchProjects(q) {
+  const ql = q.toLowerCase().trim();
+  const base = activeFilter === 'all' ? projects : projects.filter(p => p.type === activeFilter);
+  filteredProjects = ql
+    ? base.filter(p => p.name.toLowerCase().includes(ql) || p.loc.toLowerCase().includes(ql) || p.type.toLowerCase().includes(ql))
+    : [...base];
+  renderMarketplace();
+}
+
+/* ============================================================
+   BUY MODAL
+============================================================ */
+function openBuyModal(id) {
+  currentProject = projects.find(p => p.id === id);
+  if (!currentProject) return;
+
+  document.getElementById('modal-title').textContent = currentProject.name;
+  document.getElementById('modal-sub').textContent = currentProject.loc + ' \u00B7 ' + currentProject.standard;
+  document.getElementById('modal-banner').style.background = 'linear-gradient(90deg, ' + currentProject.color + ', #2db87a)';
+  document.getElementById('modal-info').innerHTML =
+    '<div class="modal-info-row"><span class="mi-label">Type</span><span class="mi-val">' + escHtml(currentProject.type) + '</span></div>' +
+    '<div class="modal-info-row"><span class="mi-label">Price / tCO&#8322;</span><span class="mi-val green">$' + currentProject.price.toFixed(2) + '</span></div>' +
+    '<div class="modal-info-row"><span class="mi-label">Available</span><span class="mi-val">' + currentProject.available.toLocaleString() + ' credits</span></div>' +
+    '<div class="modal-info-row"><span class="mi-label">Standard</span><span class="mi-val">' + escHtml(currentProject.standard) + ' + ' + escHtml(currentProject.co_benefit) + '</span></div>';
+
+  document.getElementById('modal-qty').value = 100;
+  updateModalTotal();
+  document.getElementById('buy-modal').classList.add('open');
+  document.getElementById('modal-qty').focus();
+}
+
+function closeModal() {
+  document.getElementById('buy-modal').classList.remove('open');
+  currentProject = null;
+}
+
+document.getElementById('buy-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+// Close modal on Escape
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+function adjQty(n) {
+  const inp = document.getElementById('modal-qty');
+  const val = parseInt(inp.value) || 0;
+  inp.value = Math.max(1, val + n);
+  updateModalTotal();
+}
+
+document.getElementById('modal-qty').addEventListener('input', updateModalTotal);
+
+function updateModalTotal() {
+  if (!currentProject) return;
+  const qty = parseInt(document.getElementById('modal-qty').value) || 0;
+  const total = qty * currentProject.price;
+  document.getElementById('modal-total').textContent = '$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
+}
+
+function confirmBuy() {
+  if (!currentProject) return;
+  const qty = parseInt(document.getElementById('modal-qty').value) || 0;
+  if (qty < 1) { showToast('\u26A0\uFE0F', 'Invalid quantity', 'Enter at least 1 credit'); return; }
+
+  const total = qty * currentProject.price;
+  const txId = 'TX-' + String(ledgerData.length + 1).padStart(3, '0');
+
+  ledgerData.unshift({
+    id: txId, type: 'Buy',
+    from: 'Market Registry', to: 'EcoVentures Ltd',
+    project: currentProject.name, qty, val: total,
+    date: new Date().toISOString().slice(0, 10)
+  });
+  filteredLedger = [...ledgerData];
+
+  // Update available credits
+  const proj = projects.find(p => p.id === currentProject.id);
+  if (proj) {
+    proj.available = Math.max(0, proj.available - qty);
+    proj.avail_pct = Math.round((proj.available / (proj.available + qty)) * proj.avail_pct);
+  }
+
+  const projectName = currentProject.name;
+  closeModal();
+  showToast('\u2705', 'Purchase complete!', qty.toLocaleString() + ' tCO\u2082 from ' + projectName);
+}
+
+/* ============================================================
+   LEDGER
+============================================================ */
+function renderLedger(data) {
+  const tbody = document.getElementById('ledger-body');
+  if (!tbody) return;
+
+  if (data.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:rgba(245,240,232,0.3);padding:40px">No transactions found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = data.map(tx => `
+    <tr>
+      <td class="td-mono">${escHtml(tx.id)}</td>
+      <td><span class="tx-type tx-${tx.type.toLowerCase()}">${escHtml(tx.type)}</span></td>
+      <td>${escHtml(tx.from)}</td>
+      <td>${escHtml(tx.to)}</td>
+      <td class="td-primary">${escHtml(tx.project)}</td>
+      <td class="td-primary">${tx.qty.toLocaleString()}</td>
+      <td>$${tx.val.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</td>
+      <td class="td-mono">${escHtml(tx.date)}</td>
+    </tr>
+  `).join('');
+}
+
+function filterLedger(q) {
+  const ql = q.toLowerCase().trim();
+  filteredLedger = ql
+    ? ledgerData.filter(tx =>
+        tx.id.toLowerCase().includes(ql) ||
+        tx.type.toLowerCase().includes(ql) ||
+        tx.from.toLowerCase().includes(ql) ||
+        tx.to.toLowerCase().includes(ql) ||
+        tx.project.toLowerCase().includes(ql)
+      )
+    : [...ledgerData];
+  renderLedger(filteredLedger);
+}
+
+function exportLedger() {
+  const header = 'Tx ID,Type,From,To,Project,Credits (tCO2),Value (USD),Date';
+  const rows = ledgerData.map(t =>
+    [t.id, t.type, '"' + t.from + '"', '"' + t.to + '"', '"' + t.project + '"', t.qty, t.val.toFixed(2), t.date].join(',')
+  );
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'carbonxchange_ledger.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('\uD83D\uDCC4', 'CSV exported', 'Ledger downloaded successfully');
+}
+
+/* ============================================================
+   PORTFOLIO
+============================================================ */
+function renderPortfolio() {
+  const container = document.getElementById('port-holdings');
+  if (!container) return;
+
+  const holdings = [
+    { name:"Amazon Reforestation", meta:"VCS \u00B7 Brazil",      qty:2100, price:18.50 },
+    { name:"Rajasthan Solar",      meta:"VCS \u00B7 India",        qty:1000, price:11.20 },
+    { name:"North Sea Wind",       meta:"VCS \u00B7 UK",           qty:650,  price:15.80 },
+    { name:"Kenya Cookstoves",     meta:"Gold Std \u00B7 Kenya",   qty:700,  price:8.60  },
+    { name:"Pacific Ocean Wind",   meta:"VCS \u00B7 Taiwan",       qty:400,  price:13.90 },
+  ];
+
+  container.innerHTML = holdings.map(h => `
+    <div class="holding-card">
+      <div>
+        <div class="holding-name">${escHtml(h.name)}</div>
+        <div class="holding-meta">${escHtml(h.meta)}</div>
+        <div class="holding-actions">
+          <button class="btn-sec" onclick="showToast('\uD83D\uDCE4','Sell order placed','Listing credits on market')">Sell</button>
+          <button class="btn-danger" onclick="showToast('\uD83C\uDFC1','Credits retired','Offset recorded in registry')">Retire</button>
+        </div>
+      </div>
+      <div class="holding-right">
+        <div class="holding-qty">${h.qty.toLocaleString()}</div>
+        <div class="holding-unit">tCO&#8322;</div>
+        <div class="holding-value">$${(h.qty * h.price).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2})}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+/* ============================================================
+   SIMULATE
+============================================================ */
+function runSimulation() {
+  const typeEl   = document.getElementById('sim-type');
+  const projEl   = document.getElementById('sim-project');
+  const buyerEl  = document.getElementById('sim-buyer');
+  const sellerEl = document.getElementById('sim-seller');
+  const qtyEl    = document.getElementById('sim-qty');
+  const priceEl  = document.getElementById('sim-price');
+
+  if (!typeEl || !projEl || !buyerEl || !sellerEl || !qtyEl || !priceEl) return;
+
+  const type    = typeEl.value;
+  const project = projEl.value;
+  const buyer   = buyerEl.value;
+  const seller  = sellerEl.value;
+  const qty     = parseInt(qtyEl.value) || 0;
+  const price   = parseFloat(priceEl.value) || 0;
+
+  if (qty < 1)   { showToast('\u26A0\uFE0F', 'Invalid quantity', 'Enter at least 1 credit'); return; }
+  if (price <= 0){ showToast('\u26A0\uFE0F', 'Invalid price', 'Price must be greater than 0'); return; }
+
+  const total   = qty * price;
+  const txId    = 'SIM-' + Date.now().toString().slice(-6);
+  const timeStr = new Date().toTimeString().slice(0, 8);
+
+  const lines = [
+    { cls:'hdr', text:'=== ' + type.toUpperCase() + ' TRANSACTION INITIATED ===' },
+    { cls:'tx',  text:'Validating parties: ' + buyer + ' \u2192 ' + seller },
+    { cls:'',    text:'Project: ' + project },
+    { cls:'',    text:'Quantity: ' + qty.toLocaleString() + ' tCO\u2082 @ $' + price.toFixed(2) + '/credit' },
+    { cls:'tx',  text:'Checking ' + seller + ' credit balance...' },
+    { cls:'ok',  text:'\u2713 Balance sufficient (' + (qty * 2.3).toFixed(0) + ' credits available)' },
+    { cls:'tx',  text:'Verifying registry certification...' },
+    { cls:'ok',  text:'\u2713 VCS serial range confirmed' },
+    { cls:'tx',  text:'Processing payment: $' + total.toLocaleString() },
+    { cls:'ok',  text:'\u2713 Funds cleared' },
+    { cls:'tx',  text:'Transferring credits to ' + buyer + '...' },
+    { cls:'ok',  text:'\u2713 ' + qty.toLocaleString() + ' tCO\u2082 credits transferred' },
+    { cls:'ok',  text:'\u2713 Tx ' + txId + ' recorded in ledger' },
+    { cls:'hdr', text:'=== TRANSACTION COMPLETE ===' },
+  ];
+
+  const log = document.getElementById('sim-log');
+  if (!log) return;
+  log.innerHTML = '';
+
+  let delay = 0;
+  lines.forEach(line => {
+    setTimeout(() => {
+      const div = document.createElement('div');
+      div.className = 'log-line';
+      const time = document.createElement('span');
+      time.className = 'log-time';
+      time.textContent = timeStr;
+      const text = document.createElement('span');
+      text.className = 'log-text ' + line.cls;
+      text.textContent = line.text;
+      div.appendChild(time);
+      div.appendChild(text);
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }, delay);
+    delay += 180 + Math.random() * 120;
+  });
+
+  setTimeout(() => {
+    const setEl = (id, val) => { const el = document.getElementById(id); if(el) el.textContent = val; };
+    const rStatus = document.getElementById('r-status');
+    if (rStatus) { rStatus.textContent = '\u2705 Confirmed'; rStatus.style.color = '#2db87a'; }
+    setEl('r-qty',   qty.toLocaleString() + ' tCO\u2082');
+    setEl('r-price', '$' + price.toFixed(2));
+    setEl('r-total', '$' + total.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}));
+    setEl('r-offset', type === 'Retire' ? qty.toLocaleString() + ' tCO\u2082 \u2713' : '\u2014');
+    setEl('r-txid', txId);
+
+    sessionStats.trades++;
+    sessionStats.vol += qty;
+    sessionStats.val += total;
+    if (type === 'Retire') sessionStats.offset += qty;
+
+    setEl('sess-trades', sessionStats.trades.toString());
+    setEl('sess-vol',    sessionStats.vol.toLocaleString() + ' tCO\u2082');
+    setEl('sess-val',    '$' + sessionStats.val.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}));
+    setEl('sess-offset', sessionStats.offset.toLocaleString() + ' tCO\u2082');
+
+    ledgerData.unshift({
+      id: txId, type, from: seller, to: buyer,
+      project, qty, val: total,
+      date: new Date().toISOString().slice(0, 10)
+    });
+    filteredLedger = [...ledgerData];
+
+    showToast('\uD83C\uDF31', type + ' transaction complete', qty.toLocaleString() + ' tCO\u2082 \u00B7 $' + total.toLocaleString());
+  }, delay + 200);
+}
+
+/* ============================================================
+   TOAST
+============================================================ */
+function showToast(icon, title, sub) {
+  const t = document.getElementById('toast');
+  const ti = document.getElementById('toast-icon');
+  const tt = document.getElementById('toast-title');
+  const ts = document.getElementById('toast-sub');
+  if (!t || !ti || !tt || !ts) return;
+
+  ti.textContent = icon;
+  tt.textContent = title;
+  ts.textContent = sub;
+  t.classList.add('show');
+
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+/* ============================================================
+   UTILITY
+============================================================ */
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+document.addEventListener('DOMContentLoaded', function() {
+  renderMarketplace();
+  renderLedger(ledgerData);
+  renderPortfolio();
+
+  // Animate stat bars
+  setTimeout(() => {
+    const bar1 = document.getElementById('bar1');
+    const bar2 = document.getElementById('bar2');
+    if (bar1) bar1.style.width = '42%';
+    if (bar2) bar2.style.width = '31%';
+  }, 400);
+});
+</script>
+</body>
+</html>

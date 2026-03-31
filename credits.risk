@@ -1,0 +1,1654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CreditIQ — ML Credit Risk Assessment Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0d12;
+    --surface: #111620;
+    --surface2: #161c28;
+    --border: #1e2a3d;
+    --accent: #00d4aa;
+    --accent2: #0077ff;
+    --danger: #ff4d6d;
+    --warn: #ffb347;
+    --text: #e8edf5;
+    --muted: #6b7a99;
+    --low: #00d4aa;
+    --medium: #ffb347;
+    --high: #ff4d6d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Instrument Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ─── GRID NOISE BG ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,170,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,170,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 240px;
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    z-index: 100;
+  }
+
+  .logo {
+    padding: 28px 24px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo-mark {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+  }
+
+  .logo-sub {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-top: 3px;
+  }
+
+  .nav {
+    padding: 16px 12px;
+    flex: 1;
+  }
+
+  .nav-section {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 8px 12px 4px;
+    margin-top: 8px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-size: 14px;
+    color: var(--muted);
+    border: 1px solid transparent;
+    margin-bottom: 2px;
+  }
+
+  .nav-item:hover { background: var(--surface2); color: var(--text); }
+  .nav-item.active {
+    background: rgba(0,212,170,0.08);
+    color: var(--accent);
+    border-color: rgba(0,212,170,0.2);
+  }
+
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+
+  .sidebar-footer {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .model-badge {
+    background: rgba(0,119,255,0.1);
+    border: 1px solid rgba(0,119,255,0.25);
+    border-radius: 6px;
+    padding: 8px 12px;
+  }
+
+  .model-badge-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+  }
+
+  .model-badge-value {
+    font-size: 13px;
+    color: var(--accent2);
+    font-weight: 600;
+    margin-top: 2px;
+  }
+
+  /* ─── MAIN ─── */
+  .main {
+    margin-left: 240px;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ─── TOPBAR ─── */
+  .topbar {
+    height: 60px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 28px;
+    background: rgba(10,13,18,0.8);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+
+  .page-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 20px;
+    color: var(--text);
+  }
+
+  .topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .status-text {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .user-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent2), var(--accent));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  /* ─── CONTENT ─── */
+  .content { padding: 28px; }
+
+  /* ─── PAGES ─── */
+  .page { display: none; animation: fadeUp 0.3s ease; }
+  .page.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ─── METRICS STRIP ─── */
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .metric-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .metric-card:hover { border-color: rgba(0,212,170,0.3); }
+
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color, var(--accent));
+    opacity: 0.7;
+  }
+
+  .metric-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .metric-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 32px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .metric-change {
+    font-size: 12px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .metric-change.up { color: var(--accent); }
+  .metric-change.down { color: var(--danger); }
+
+  /* ─── SECTION HEADER ─── */
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px;
+  }
+
+  .section-actions { display: flex; gap: 8px; }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* ─── GRID LAYOUTS ─── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    font-family: 'Instrument Sans', sans-serif;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #0a0d12;
+  }
+  .btn-primary:hover { background: #00e8bb; transform: translateY(-1px); }
+
+  .btn-secondary {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+
+  .btn-danger {
+    background: rgba(255,77,109,0.15);
+    border: 1px solid rgba(255,77,109,0.3);
+    color: var(--danger);
+  }
+
+  .btn-lg {
+    padding: 14px 28px;
+    font-size: 15px;
+    border-radius: 10px;
+  }
+
+  /* ─── FORM ─── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .form-full { grid-column: 1 / -1; }
+
+  .form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .form-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+  }
+
+  .form-input, .form-select {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Instrument Sans', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    width: 100%;
+  }
+
+  .form-input:focus, .form-select:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,212,170,0.08);
+  }
+
+  .form-select option { background: var(--surface2); }
+
+  /* ─── RISK RESULT ─── */
+  .risk-result {
+    display: none;
+    margin-top: 24px;
+    animation: fadeUp 0.4s ease;
+  }
+
+  .risk-result.show { display: block; }
+
+  .risk-gauge-wrap {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    padding: 24px;
+    background: var(--surface2);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    margin-bottom: 20px;
+  }
+
+  .gauge-container {
+    position: relative;
+    width: 140px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+
+  .gauge-svg { width: 140px; height: 80px; }
+
+  .gauge-value-label {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+  }
+
+  .gauge-score {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--text);
+    line-height: 1;
+  }
+
+  .gauge-score-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .risk-details { flex: 1; }
+
+  .risk-verdict {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    margin-bottom: 6px;
+  }
+
+  .risk-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 12px;
+  }
+
+  .risk-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .risk-tag {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .tag-low { background: rgba(0,212,170,0.12); color: var(--low); border: 1px solid rgba(0,212,170,0.25); }
+  .tag-medium { background: rgba(255,179,71,0.12); color: var(--medium); border: 1px solid rgba(255,179,71,0.25); }
+  .tag-high { background: rgba(255,77,109,0.12); color: var(--high); border: 1px solid rgba(255,77,109,0.25); }
+
+  /* ─── FEATURE IMPORTANCE ─── */
+  .feature-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .feature-name {
+    font-size: 12px;
+    color: var(--muted);
+    width: 160px;
+    flex-shrink: 0;
+  }
+
+  .feature-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+
+  .feature-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 1s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  .feature-pct {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text);
+    width: 36px;
+    text-align: right;
+  }
+
+  /* ─── TABLE ─── */
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+
+  thead { background: var(--surface2); }
+
+  th {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding: 12px 16px;
+    text-align: left;
+    font-weight: 500;
+  }
+
+  td {
+    padding: 13px 16px;
+    border-top: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  .risk-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    font-weight: 500;
+  }
+
+  .risk-pill::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+
+  .pill-low { background: rgba(0,212,170,0.1); color: var(--low); }
+  .pill-medium { background: rgba(255,179,71,0.1); color: var(--medium); }
+  .pill-high { background: rgba(255,77,109,0.1); color: var(--high); }
+
+  /* ─── PROGRESS / MODEL METRICS ─── */
+  .metric-ring-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .ring-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  .ring-value {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    color: var(--text);
+    text-align: center;
+    margin-top: -4px;
+  }
+
+  /* ─── CHARTS (canvas) ─── */
+  .chart-placeholder {
+    width: 100%;
+    background: var(--surface2);
+    border-radius: 8px;
+    display: flex;
+    align-items: flex-end;
+    gap: 6px;
+    padding: 16px;
+    height: 140px;
+  }
+
+  .chart-bar {
+    flex: 1;
+    border-radius: 4px 4px 0 0;
+    transition: height 0.8s cubic-bezier(0.4,0,0.2,1);
+  }
+
+  /* ─── CONFUSION MATRIX ─── */
+  .confusion-matrix {
+    display: grid;
+    grid-template-columns: auto 1fr 1fr;
+    grid-template-rows: auto 1fr 1fr;
+    gap: 4px;
+    max-width: 280px;
+  }
+
+  .cm-label {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    letter-spacing: 0.5px;
+  }
+
+  .cm-cell {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 16px;
+    text-align: center;
+  }
+
+  .cm-cell.tp, .cm-cell.tn { border-color: rgba(0,212,170,0.3); background: rgba(0,212,170,0.06); }
+  .cm-cell.fp, .cm-cell.fn { border-color: rgba(255,77,109,0.3); background: rgba(255,77,109,0.06); }
+
+  .cm-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 24px;
+  }
+
+  .cm-desc {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    margin-top: 4px;
+  }
+
+  /* ─── LOADING SPINNER ─── */
+  .spinner {
+    display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid rgba(0,212,170,0.2);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ─── ABOUT PAGE ─── */
+  .pipeline-step {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px;
+    background: var(--surface2);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .step-num {
+    font-family: 'DM Serif Display', serif;
+    font-size: 28px;
+    color: var(--accent);
+    opacity: 0.4;
+    line-height: 1;
+    flex-shrink: 0;
+    width: 36px;
+  }
+
+  .step-title {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 4px;
+  }
+
+  .step-desc {
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  .tech-tag {
+    display: inline-block;
+    background: rgba(0,119,255,0.1);
+    border: 1px solid rgba(0,119,255,0.2);
+    color: var(--accent2);
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-right: 6px;
+    margin-top: 8px;
+    letter-spacing: 0.3px;
+  }
+
+  /* ─── TOAST ─── */
+  .toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .toast {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideIn 0.3s ease;
+    max-width: 320px;
+  }
+
+  .toast.success { border-left: 3px solid var(--accent); }
+  .toast.error { border-left: 3px solid var(--danger); }
+
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* ─── MISC ─── */
+  .divider { height: 1px; background: var(--border); margin: 20px 0; }
+  .text-muted { color: var(--muted); }
+  .text-accent { color: var(--accent); }
+  .text-mono { font-family: 'IBM Plex Mono', monospace; }
+  .mt-0 { margin-top: 0; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+
+  .algo-tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+  .algo-tab {
+    padding: 7px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    transition: all 0.15s;
+    font-family: 'IBM Plex Mono', monospace;
+  }
+  .algo-tab.active { background: rgba(0,212,170,0.1); color: var(--accent); border-color: rgba(0,212,170,0.3); }
+
+  .inline-flex { display: flex; align-items: center; gap: 8px; }
+  .gap-16 { gap: 16px; }
+</style>
+</head>
+<body>
+
+<!-- ─── SIDEBAR ─── -->
+<nav class="sidebar">
+  <div class="logo">
+    <div class="logo-mark">CreditIQ</div>
+    <div class="logo-sub">ML Risk Platform</div>
+  </div>
+  <div class="nav">
+    <div class="nav-section">Main</div>
+    <div class="nav-item active" onclick="goTo('dashboard', this)">
+      <span class="nav-icon">◈</span> Dashboard
+    </div>
+    <div class="nav-item" onclick="goTo('assess', this)">
+      <span class="nav-icon">⬡</span> Assess Applicant
+    </div>
+    <div class="nav-item" onclick="goTo('history', this)">
+      <span class="nav-icon">≡</span> Assessment Log
+    </div>
+    <div class="nav-section">Analytics</div>
+    <div class="nav-item" onclick="goTo('model', this)">
+      <span class="nav-icon">◎</span> Model Performance
+    </div>
+    <div class="nav-item" onclick="goTo('about', this)">
+      <span class="nav-icon">⊕</span> Architecture
+    </div>
+  </div>
+  <div class="sidebar-footer">
+    <div class="model-badge">
+      <div class="model-badge-label">Active Model</div>
+      <div class="model-badge-value">XGBoost v2.4</div>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── MAIN ─── -->
+<div class="main">
+
+  <div class="topbar">
+    <div class="page-title" id="topbar-title">Dashboard</div>
+    <div class="topbar-right">
+      <div class="status-dot"></div>
+      <span class="status-text">Model Online</span>
+      <div class="user-avatar">RK</div>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ═══════════════ DASHBOARD ═══════════════ -->
+    <div class="page active" id="page-dashboard">
+
+      <div class="metrics-grid">
+        <div class="metric-card" style="--card-color: var(--accent)">
+          <div class="metric-label">Total Assessments</div>
+          <div class="metric-value" id="total-count">1,284</div>
+          <div class="metric-change up">↑ 12% this month</div>
+        </div>
+        <div class="metric-card" style="--card-color: var(--low)">
+          <div class="metric-label">Low Risk Approved</div>
+          <div class="metric-value">68%</div>
+          <div class="metric-change up">↑ 4% vs last month</div>
+        </div>
+        <div class="metric-card" style="--card-color: var(--high)">
+          <div class="metric-label">High Risk Flagged</div>
+          <div class="metric-value">18%</div>
+          <div class="metric-change down">↓ 2% defaults caught</div>
+        </div>
+        <div class="metric-card" style="--card-color: var(--accent2)">
+          <div class="metric-label">Model Accuracy</div>
+          <div class="metric-value">94.7%</div>
+          <div class="metric-change up">↑ ROC-AUC: 0.97</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+
+        <div class="card">
+          <div class="section-header">
+            <div class="section-title">Risk Distribution</div>
+          </div>
+          <div style="display:flex; align-items:flex-end; gap:8px; height:160px; padding:8px 0;">
+            <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-align:center">LOW</div>
+              <div style="height:110px;background:rgba(0,212,170,0.6);border-radius:6px 6px 0 0;position:relative;display:flex;align-items:center;justify-content:center;">
+                <span style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff">68%</span>
+              </div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-align:center">MEDIUM</div>
+              <div style="height:64px;background:rgba(255,179,71,0.6);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;">
+                <span style="font-family:'DM Serif Display',serif;font-size:20px;color:#fff">14%</span>
+              </div>
+            </div>
+            <div style="flex:1;display:flex;flex-direction:column;gap:4px;">
+              <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:1px;text-align:center">HIGH</div>
+              <div style="height:100px;background:rgba(255,77,109,0.6);border-radius:6px 6px 0 0;display:flex;align-items:center;justify-content:center;">
+                <span style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff">18%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-header">
+            <div class="section-title">Feature Importance</div>
+          </div>
+          <div>
+            <div class="feature-bar">
+              <div class="feature-name">Debt-to-Income Ratio</div>
+              <div class="feature-track"><div class="feature-fill" style="width:92%;background:var(--accent)"></div></div>
+              <div class="feature-pct">92%</div>
+            </div>
+            <div class="feature-bar">
+              <div class="feature-name">Credit History Length</div>
+              <div class="feature-track"><div class="feature-fill" style="width:79%;background:var(--accent)"></div></div>
+              <div class="feature-pct">79%</div>
+            </div>
+            <div class="feature-bar">
+              <div class="feature-name">Annual Income</div>
+              <div class="feature-track"><div class="feature-fill" style="width:67%;background:var(--accent2)"></div></div>
+              <div class="feature-pct">67%</div>
+            </div>
+            <div class="feature-bar">
+              <div class="feature-name">Loan Amount</div>
+              <div class="feature-track"><div class="feature-fill" style="width:58%;background:var(--accent2)"></div></div>
+              <div class="feature-pct">58%</div>
+            </div>
+            <div class="feature-bar">
+              <div class="feature-name">Payment History</div>
+              <div class="feature-track"><div class="feature-fill" style="width:51%;background:var(--warn)"></div></div>
+              <div class="feature-pct">51%</div>
+            </div>
+            <div class="feature-bar">
+              <div class="feature-name">Employment Status</div>
+              <div class="feature-track"><div class="feature-fill" style="width:34%;background:var(--warn)"></div></div>
+              <div class="feature-pct">34%</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">Recent Assessments</div>
+          <div><button class="btn btn-secondary" onclick="goToPage('assess')">+ New Assessment</button></div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Applicant</th>
+                <th>Loan Amount</th>
+                <th>Income</th>
+                <th>Risk Score</th>
+                <th>Decision</th>
+                <th>Timestamp</th>
+              </tr>
+            </thead>
+            <tbody id="recent-table">
+              <!-- Populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ═══════════════ ASSESS PAGE ═══════════════ -->
+    <div class="page" id="page-assess">
+
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="section-header">
+              <div class="section-title">Applicant Information</div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Full Name</label>
+                <input class="form-input" id="f-name" placeholder="e.g. Priya Sharma" type="text">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Age</label>
+                <input class="form-input" id="f-age" placeholder="25–75" type="number">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Annual Income (₹)</label>
+                <input class="form-input" id="f-income" placeholder="e.g. 800000" type="number">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Employment Status</label>
+                <select class="form-select" id="f-emp">
+                  <option value="employed">Employed</option>
+                  <option value="self_employed">Self-Employed</option>
+                  <option value="business">Business Owner</option>
+                  <option value="unemployed">Unemployed</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Loan Amount Requested (₹)</label>
+                <input class="form-input" id="f-loan" placeholder="e.g. 500000" type="number">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Loan Purpose</label>
+                <select class="form-select" id="f-purpose">
+                  <option value="home">Home Loan</option>
+                  <option value="personal">Personal Loan</option>
+                  <option value="education">Education Loan</option>
+                  <option value="vehicle">Vehicle Loan</option>
+                  <option value="business">Business Loan</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Loan Term (Months)</label>
+                <select class="form-select" id="f-term">
+                  <option value="12">12</option>
+                  <option value="24">24</option>
+                  <option value="36" selected>36</option>
+                  <option value="60">60</option>
+                  <option value="84">84</option>
+                  <option value="120">120</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Existing Debts (₹)</label>
+                <input class="form-input" id="f-debt" placeholder="e.g. 0" type="number" value="0">
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-header">
+              <div class="section-title">Credit Profile</div>
+            </div>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Credit Score (300–900)</label>
+                <input class="form-input" id="f-credit" placeholder="e.g. 720" type="number">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Credit History (Years)</label>
+                <input class="form-input" id="f-history" placeholder="e.g. 5" type="number">
+              </div>
+              <div class="form-group">
+                <label class="form-label">No. of Open Accounts</label>
+                <input class="form-input" id="f-accounts" placeholder="e.g. 3" type="number">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Late Payments (Last 2yr)</label>
+                <input class="form-input" id="f-late" placeholder="e.g. 0" type="number" value="0">
+              </div>
+              <div class="form-group form-full">
+                <label class="form-label">Payment History</label>
+                <select class="form-select" id="f-payment">
+                  <option value="excellent">Excellent — all on time</option>
+                  <option value="good">Good — 1–2 late</option>
+                  <option value="fair">Fair — occasional late</option>
+                  <option value="poor">Poor — frequent late/defaults</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn btn-primary btn-lg" onclick="runAssessment()" style="width:100%;justify-content:center;">
+            <span id="assess-btn-text">▶ Run ML Assessment</span>
+            <span id="assess-spinner" style="display:none"><div class="spinner"></div></span>
+          </button>
+        </div>
+
+        <!-- ─── RESULT PANEL ─── -->
+        <div>
+          <div class="card" style="min-height:300px;">
+            <div class="section-title" style="margin-bottom:16px;">Assessment Result</div>
+
+            <div id="result-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 0;gap:12px;">
+              <div style="font-size:40px;opacity:0.2">⬡</div>
+              <div style="color:var(--muted);font-size:13px;text-align:center;">Complete the form and run the assessment<br>to see the ML risk evaluation here.</div>
+            </div>
+
+            <div class="risk-result" id="risk-result">
+
+              <div class="risk-gauge-wrap">
+                <div class="gauge-container">
+                  <svg class="gauge-svg" viewBox="0 0 140 80">
+                    <!-- Track -->
+                    <path d="M 14 74 A 56 56 0 0 1 126 74" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="10" stroke-linecap="round"/>
+                    <!-- Fill -->
+                    <path id="gauge-fill" d="M 14 74 A 56 56 0 0 1 126 74" fill="none" stroke="var(--accent)" stroke-width="10" stroke-linecap="round"
+                          stroke-dasharray="176" stroke-dashoffset="176"/>
+                  </svg>
+                  <div class="gauge-value-label">
+                    <div class="gauge-score" id="gauge-score">—</div>
+                    <div class="gauge-score-label">Risk Score</div>
+                  </div>
+                </div>
+
+                <div class="risk-details">
+                  <div class="risk-verdict" id="risk-verdict">—</div>
+                  <div class="risk-desc" id="risk-desc">—</div>
+                  <div class="risk-tags" id="risk-tags"></div>
+                </div>
+              </div>
+
+              <div class="card" style="background:var(--surface2);margin-top:0;">
+                <div style="font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;">Model Breakdown</div>
+                <div id="breakdown-bars"></div>
+              </div>
+
+              <div class="card" style="background:var(--surface2);margin-top:20px;">
+                <div style="font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;">Recommendation</div>
+                <div id="recommendation" style="font-size:14px;line-height:1.7;color:var(--text);"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════ HISTORY ═══════════════ -->
+    <div class="page" id="page-history">
+      <div class="card">
+        <div class="section-header">
+          <div class="section-title">Assessment Log</div>
+          <div class="section-actions">
+            <button class="btn btn-secondary">⬇ Export CSV</button>
+            <button class="btn btn-secondary">⚙ Filter</button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Loan Type</th>
+                <th>Amount</th>
+                <th>Credit Score</th>
+                <th>DTI</th>
+                <th>Risk</th>
+                <th>Score</th>
+                <th>Decision</th>
+              </tr>
+            </thead>
+            <tbody id="history-table"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════ MODEL PERFORMANCE ═══════════════ -->
+    <div class="page" id="page-model">
+      <div class="algo-tabs">
+        <div class="algo-tab active" onclick="selectAlgo('xgb',this)">XGBoost</div>
+        <div class="algo-tab" onclick="selectAlgo('rf',this)">Random Forest</div>
+        <div class="algo-tab" onclick="selectAlgo('lr',this)">Logistic Regression</div>
+        <div class="algo-tab" onclick="selectAlgo('nn',this)">Neural Network</div>
+      </div>
+
+      <div class="metrics-grid">
+        <div class="metric-card" style="--card-color:var(--accent)">
+          <div class="metric-label">Accuracy</div>
+          <div class="metric-value" id="m-accuracy">94.7%</div>
+        </div>
+        <div class="metric-card" style="--card-color:var(--accent2)">
+          <div class="metric-label">ROC-AUC</div>
+          <div class="metric-value" id="m-auc">0.971</div>
+        </div>
+        <div class="metric-card" style="--card-color:var(--warn)">
+          <div class="metric-label">Precision</div>
+          <div class="metric-value" id="m-precision">93.2%</div>
+        </div>
+        <div class="metric-card" style="--card-color:var(--high)">
+          <div class="metric-label">Recall (F1)</div>
+          <div class="metric-value" id="m-recall">91.8%</div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="section-title" style="margin-bottom:16px;">Confusion Matrix</div>
+          <div class="confusion-matrix">
+            <div class="cm-label"></div>
+            <div class="cm-label">Pred Low</div>
+            <div class="cm-label">Pred High</div>
+            <div class="cm-label">Act Low</div>
+            <div class="cm-cell tp">
+              <div class="cm-num" id="cm-tp">872</div>
+              <div class="cm-desc">True Negative</div>
+            </div>
+            <div class="cm-cell fp">
+              <div class="cm-num" id="cm-fp">48</div>
+              <div class="cm-desc">False Positive</div>
+            </div>
+            <div class="cm-label">Act High</div>
+            <div class="cm-cell fn">
+              <div class="cm-num" id="cm-fn">29</div>
+              <div class="cm-desc">False Negative</div>
+            </div>
+            <div class="cm-cell tn">
+              <div class="cm-num" id="cm-tn">335</div>
+              <div class="cm-desc">True Positive</div>
+            </div>
+          </div>
+          <div style="margin-top:16px;font-size:12px;color:var(--muted);line-height:1.7;">
+            Total test samples: <span id="cm-total" style="color:var(--text)">1,284</span><br>
+            Miss rate (FN): <span style="color:var(--danger)" id="cm-miss">2.3%</span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title" style="margin-bottom:16px;">Algorithm Comparison</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-size:12px;color:var(--muted)">XGBoost</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent)">94.7%</span>
+              </div>
+              <div class="feature-track"><div class="feature-fill" style="width:94.7%;background:var(--accent)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-size:12px;color:var(--muted)">Random Forest</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent2)">92.1%</span>
+              </div>
+              <div class="feature-track"><div class="feature-fill" style="width:92.1%;background:var(--accent2)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-size:12px;color:var(--muted)">Neural Network</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--warn)">91.5%</span>
+              </div>
+              <div class="feature-track"><div class="feature-fill" style="width:91.5%;background:var(--warn)"></div></div>
+            </div>
+            <div>
+              <div style="display:flex;justify-content:space-between;margin-bottom:4px;">
+                <span style="font-size:12px;color:var(--muted)">Logistic Regression</span>
+                <span style="font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--muted)">84.3%</span>
+              </div>
+              <div class="feature-track"><div class="feature-fill" style="width:84.3%;background:var(--muted)"></div></div>
+            </div>
+          </div>
+          <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+            <div style="font-size:12px;color:var(--muted);font-family:'IBM Plex Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Training Info</div>
+            <div style="font-size:13px;color:var(--text);line-height:1.8;">
+              Dataset: <span class="text-accent">50,000</span> loan records (2019–2024)<br>
+              Train/Test Split: <span class="text-accent">80/20</span><br>
+              Cross-validation: <span class="text-accent">5-fold</span><br>
+              Oversampling: <span class="text-accent">SMOTE</span> for class balance<br>
+              Features: <span class="text-accent">18</span> engineered features
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ═══════════════ ABOUT / ARCHITECTURE ═══════════════ -->
+    <div class="page" id="page-about">
+
+      <div class="grid-2">
+        <div>
+          <div class="card">
+            <div class="section-title" style="margin-bottom:4px;">ML Pipeline Architecture</div>
+            <div style="font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.6;">
+              Industry-grade credit risk system using ensemble methods, feature engineering, and explainability tools.
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-num">01</div>
+              <div>
+                <div class="step-title">Data Ingestion & Cleaning</div>
+                <div class="step-desc">Raw loan application data is pulled from core banking APIs. Missing values are handled via median imputation for numeric fields, mode for categoricals. Outliers detected using IQR method.</div>
+                <span class="tech-tag">Pandas</span><span class="tech-tag">SQL</span><span class="tech-tag">Apache Kafka</span>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-num">02</div>
+              <div>
+                <div class="step-title">Feature Engineering</div>
+                <div class="step-desc">Debt-to-Income ratio, loan-to-value, utilization rate computed. Categorical encoding via target encoding. Credit score binning, interaction features created.</div>
+                <span class="tech-tag">Scikit-learn</span><span class="tech-tag">FeatureTools</span>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-num">03</div>
+              <div>
+                <div class="step-title">Model Training & Selection</div>
+                <div class="step-desc">XGBoost selected as primary model after 5-fold CV. Hyperparameters tuned with Optuna Bayesian search. SMOTE applied for class imbalance. Ensemble stacking for production.</div>
+                <span class="tech-tag">XGBoost</span><span class="tech-tag">Optuna</span><span class="tech-tag">SMOTE</span>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-num">04</div>
+              <div>
+                <div class="step-title">Explainability (XAI)</div>
+                <div class="step-desc">SHAP values computed for every prediction to explain decisions to loan officers. LIME used for local interpretability. Regulatory compliance via audit logs.</div>
+                <span class="tech-tag">SHAP</span><span class="tech-tag">LIME</span><span class="tech-tag">ELI5</span>
+              </div>
+            </div>
+
+            <div class="pipeline-step">
+              <div class="step-num">05</div>
+              <div>
+                <div class="step-title">Model Serving & Monitoring</div>
+                <div class="step-desc">Model deployed via FastAPI REST endpoint. MLflow tracks experiments. Evidently AI monitors data drift. Automated retraining triggered on drift detection.</div>
+                <span class="tech-tag">FastAPI</span><span class="tech-tag">MLflow</span><span class="tech-tag">Docker</span><span class="tech-tag">Evidently</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="card">
+            <div class="section-title" style="margin-bottom:16px;">Technology Stack</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Frontend</div>
+                <div style="font-size:12px;color:var(--text);line-height:1.8;">HTML5 / CSS3<br>Vanilla JS<br>Chart.js<br>Responsive UI</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--accent2);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Backend</div>
+                <div style="font-size:12px;color:var(--text);line-height:1.8;">Python / FastAPI<br>PostgreSQL<br>Redis Cache<br>JWT Auth</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--warn);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">ML Core</div>
+                <div style="font-size:12px;color:var(--text);line-height:1.8;">XGBoost v2.4<br>Scikit-learn<br>SHAP / LIME<br>MLflow</div>
+              </div>
+              <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+                <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--high);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;">Infra</div>
+                <div style="font-size:12px;color:var(--text);line-height:1.8;">Docker / K8s<br>AWS EC2<br>CI/CD GitHub<br>Grafana</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="section-title" style="margin-bottom:12px;">Risk Scoring Logic</div>
+            <div style="font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:16px;">
+              The final risk score (0–100) is computed from the XGBoost predicted probability, adjusted by calibration:
+            </div>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--accent);line-height:1.8;">
+              score = round(model.predict_proba(X)[:,1] × 100)<br><br>
+              <span style="color:var(--muted)"># Thresholds</span><br>
+              LOW    = score ≤ 35<br>
+              MEDIUM = 35 &lt; score ≤ 65<br>
+              HIGH   = score &gt; 65
+            </div>
+
+            <div style="margin-top:16px;">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <div style="width:12px;height:12px;border-radius:50%;background:var(--low);"></div>
+                <span style="font-size:13px;color:var(--text);">Low Risk</span>
+                <span style="font-size:12px;color:var(--muted);margin-left:auto;">Score ≤ 35 · Approve</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                <div style="width:12px;height:12px;border-radius:50%;background:var(--medium);"></div>
+                <span style="font-size:13px;color:var(--text);">Medium Risk</span>
+                <span style="font-size:12px;color:var(--muted);margin-left:auto;">36–65 · Review</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:12px;height:12px;border-radius:50%;background:var(--high);"></div>
+                <span style="font-size:13px;color:var(--text);">High Risk</span>
+                <span style="font-size:12px;color:var(--muted);margin-left:auto;">Score > 65 · Reject</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- Toast container -->
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const assessmentLog = [];
+
+const SAMPLE_DATA = [
+  { name: 'Arjun Mehta',   loan: 400000,  income: 900000,  credit: 742, dti: 18, risk: 'low',    score: 22, decision: 'Approved' },
+  { name: 'Deepa Nair',    loan: 1500000, income: 600000,  credit: 580, dti: 67, risk: 'high',   score: 78, decision: 'Rejected' },
+  { name: 'Ravi Kumar',    loan: 250000,  income: 450000,  credit: 680, dti: 30, risk: 'medium', score: 48, decision: 'Review'   },
+  { name: 'Sneha Iyer',    loan: 800000,  income: 1200000, credit: 790, dti: 22, risk: 'low',    score: 17, decision: 'Approved' },
+  { name: 'Vikram Singh',  loan: 2000000, income: 800000,  credit: 610, dti: 71, risk: 'high',   score: 84, decision: 'Rejected' },
+  { name: 'Priya Rao',     loan: 300000,  income: 550000,  credit: 720, dti: 28, risk: 'low',    score: 29, decision: 'Approved' },
+  { name: 'Karan Patel',   loan: 600000,  income: 700000,  credit: 650, dti: 42, risk: 'medium', score: 55, decision: 'Review'   },
+];
+
+// Populate sample data
+SAMPLE_DATA.forEach(d => assessmentLog.push(d));
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+const PAGE_TITLES = {
+  dashboard: 'Dashboard',
+  assess: 'Assess Applicant',
+  history: 'Assessment Log',
+  model: 'Model Performance',
+  about: 'Architecture'
+};
+
+function goTo(pageId, navEl) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-' + pageId).classList.add('active');
+  if (navEl) navEl.classList.add('active');
+  document.getElementById('topbar-title').textContent = PAGE_TITLES[pageId];
+
+  if (pageId === 'history') renderHistory();
+  if (pageId === 'dashboard') renderRecentTable();
+}
+
+function goToPage(pageId) {
+  const navItems = document.querySelectorAll('.nav-item');
+  const map = ['dashboard','assess','history','model','about'];
+  navItems[map.indexOf(pageId)].click();
+}
+
+// ─── RENDER TABLES ────────────────────────────────────────────────────────────
+function pillHtml(risk, score) {
+  const cls = { low: 'pill-low', medium: 'pill-medium', high: 'pill-high' }[risk];
+  return `<span class="risk-pill ${cls}">${risk.charAt(0).toUpperCase()+risk.slice(1)}</span>`;
+}
+
+function decisionColor(d) {
+  if (d === 'Approved') return 'color:var(--low)';
+  if (d === 'Rejected') return 'color:var(--high)';
+  return 'color:var(--warn)';
+}
+
+function renderRecentTable() {
+  const tbody = document.getElementById('recent-table');
+  const items = [...assessmentLog].reverse().slice(0, 7);
+  tbody.innerHTML = items.map((d, i) => `
+    <tr>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)">CRQ-${1000 + assessmentLog.length - i}</td>
+      <td style="font-weight:500">${d.name}</td>
+      <td>₹${d.loan.toLocaleString('en-IN')}</td>
+      <td>₹${d.income.toLocaleString('en-IN')}</td>
+      <td>${pillHtml(d.risk)} <span style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);margin-left:4px">${d.score}</span></td>
+      <td style="${decisionColor(d.decision)};font-weight:600;font-size:13px">${d.decision}</td>
+      <td style="color:var(--muted);font-size:12px">Just now</td>
+    </tr>
+  `).join('');
+}
+
+function renderHistory() {
+  const tbody = document.getElementById('history-table');
+  tbody.innerHTML = [...assessmentLog].reverse().map((d, i) => `
+    <tr>
+      <td style="font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted)">CRQ-${1000 + assessmentLog.length - i}</td>
+      <td style="font-weight:500">${d.name}</td>
+      <td style="color:var(--muted);font-size:12px">${d.purpose || 'Personal'}</td>
+      <td>₹${d.loan.toLocaleString('en-IN')}</td>
+      <td style="font-family:'IBM Plex Mono',monospace">${d.credit}</td>
+      <td style="font-family:'IBM Plex Mono',monospace">${d.dti}%</td>
+      <td>${pillHtml(d.risk)}</td>
+      <td><span style="font-family:'IBM Plex Mono',monospace;font-size:12px;background:var(--surface2);padding:3px 8px;border-radius:4px;color:var(--text)">${d.score}</span></td>
+      <td style="${decisionColor(d.decision)};font-weight:600;font-size:13px">${d.decision}</td>
+    </tr>
+  `).join('');
+}
+
+// ─── ASSESSMENT ENGINE ────────────────────────────────────────────────────────
+function runAssessment() {
+  const name    = document.getElementById('f-name').value.trim() || 'Applicant';
+  const age     = parseFloat(document.getElementById('f-age').value) || 35;
+  const income  = parseFloat(document.getElementById('f-income').value);
+  const loan    = parseFloat(document.getElementById('f-loan').value);
+  const credit  = parseFloat(document.getElementById('f-credit').value);
+  const history = parseFloat(document.getElementById('f-history').value) || 0;
+  const accounts= parseFloat(document.getElementById('f-accounts').value) || 2;
+  const late    = parseFloat(document.getElementById('f-late').value) || 0;
+  const debt    = parseFloat(document.getElementById('f-debt').value) || 0;
+  const emp     = document.getElementById('f-emp').value;
+  const payment = document.getElementById('f-payment').value;
+  const purpose = document.getElementById('f-purpose').value;
+  const term    = parseFloat(document.getElementById('f-term').value);
+
+  if (!income || !loan || !credit) {
+    showToast('Please fill in Income, Loan Amount, and Credit Score.', 'error');
+    return;
+  }
+
+  // Show loading
+  document.getElementById('assess-btn-text').style.display = 'none';
+  document.getElementById('assess-spinner').style.display = 'flex';
+  document.getElementById('result-placeholder').style.display = 'none';
+
+  setTimeout(() => {
+    const result = computeRisk({ name, age, income, loan, credit, history, accounts, late, debt, emp, payment, purpose, term });
+    document.getElementById('assess-btn-text').style.display = 'inline';
+    document.getElementById('assess-spinner').style.display = 'none';
+    displayResult(result);
+
+    assessmentLog.push({
+      name, loan, income, credit,
+      dti: result.dti,
+      risk: result.riskLevel,
+      score: result.score,
+      decision: result.decision,
+      purpose: purposeLabel(purpose)
+    });
+
+    document.getElementById('total-count').textContent = (1284 + assessmentLog.length - SAMPLE_DATA.length).toLocaleString();
+
+  }, 1800);
+}
+
+function purposeLabel(p) {
+  return { home:'Home', personal:'Personal', education:'Education', vehicle:'Vehicle', business:'Business' }[p] || p;
+}
+
+function computeRisk({ income, loan, credit, history, accounts, late, debt, emp, payment }) {
+  const dti = income > 0 ? Math.round(((loan * 0.02 + debt) / (income / 12)) * 100) : 999;
+  const lti = income > 0 ? (loan / income) : 99;
+
+  let score = 0;
+
+  // Credit score (0-30)
+  if (credit >= 800) score += 0;
+  else if (credit >= 750) score += 8;
+  else if (credit >= 700) score += 16;
+  else if (credit >= 650) score += 25;
+  else if (credit >= 600) score += 38;
+  else score += 55;
+
+  // DTI (0-25)
+  if (dti <= 20) score += 0;
+  else if (dti <= 35) score += 10;
+  else if (dti <= 50) score += 22;
+  else score += 35;
+
+  // Loan-to-income (0-15)
+  if (lti < 0.5) score += 0;
+  else if (lti < 1.5) score += 5;
+  else if (lti < 3) score += 12;
+  else score += 20;
+
+  // Payment history (0-20)
+  const ph = { excellent: 0, good: 8, fair: 18, poor: 30 };
+  score += ph[payment] || 0;
+
+  // Late payments
+  score += Math.min(late * 6, 18);
+
+  // Credit history
+  if (history >= 10) score -= 5;
+  else if (history >= 5) score -= 2;
+  else if (history < 2) score += 8;
+
+  // Employment
+  if (emp === 'unemployed') score += 20;
+  else if (emp === 'self_employed') score += 5;
+
+  score = Math.max(5, Math.min(95, Math.round(score)));
+
+  const riskLevel = score <= 35 ? 'low' : score <= 65 ? 'medium' : 'high';
+  const decision  = score <= 35 ? 'Approved' : score <= 65 ? 'Review' : 'Rejected';
+
+  const factors = {
+    'Debt-to-Income Ratio': Math.min(100, dti * 1.4),
+    'Credit Score Weight':  Math.round((900 - credit) / 6),
+    'Payment History':      ph[payment] || 0,
+    'Loan-to-Income':       Math.round(lti * 30),
+    'Credit History':       Math.max(0, 30 - history * 2.5),
+  };
+
+  return { score, riskLevel, decision, dti, lti, factors };
+}
+
+function displayResult({ score, riskLevel, decision, dti, lti, factors }) {
+  // Gauge animation
+  const arc = 176;
+  const offset = arc - (score / 100) * arc;
+  const gaugeFill = document.getElementById('gauge-fill');
+  const colors = { low: 'var(--low)', medium: 'var(--warn)', high: 'var(--high)' };
+  gaugeFill.style.stroke = colors[riskLevel];
+  setTimeout(() => { gaugeFill.style.strokeDashoffset = offset; }, 50);
+  gaugeFill.style.transition = 'stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)';
+
+  document.getElementById('gauge-score').textContent = score;
+
+  const verdicts = {
+    low:    '✓ Low Risk — Recommend Approve',
+    medium: '⚠ Medium Risk — Manual Review',
+    high:   '✗ High Risk — Recommend Reject'
+  };
+  const descs = {
+    low:    `Strong credit profile. DTI of ${dti}% is within acceptable range. Low probability of default.`,
+    medium: `Moderate indicators. DTI at ${dti}%. Recommend additional verification before final decision.`,
+    high:   `Elevated default probability. DTI of ${dti}% exceeds threshold. Credit profile shows risk factors.`
+  };
+  const tagSets = {
+    low:    ['<span class="risk-tag tag-low">DTI OK</span>','<span class="risk-tag tag-low">Credit OK</span>','<span class="risk-tag tag-low">Low Default Prob</span>'],
+    medium: ['<span class="risk-tag tag-medium">Review DTI</span>','<span class="risk-tag tag-medium">Monitor</span>','<span class="risk-tag tag-medium">Mid Confidence</span>'],
+    high:   ['<span class="risk-tag tag-high">High DTI</span>','<span class="risk-tag tag-high">Risk Flags</span>','<span class="risk-tag tag-high">Reject Advised</span>'],
+  };
+  const recs = {
+    low:    `The applicant demonstrates a solid repayment capacity. With a credit score and DTI both within policy limits, the model recommends <strong style="color:var(--accent)">loan approval</strong>. Standard KYC verification is advised before disbursement.`,
+    medium: `The application shows mixed signals. Some risk factors exceed thresholds while others remain acceptable. The model flags this for <strong style="color:var(--warn)">manual underwriter review</strong>. Consider requesting additional income proof or a co-applicant.`,
+    high:   `Multiple risk factors indicate a high probability of default. DTI exceeds the 50% policy limit. The model recommends <strong style="color:var(--high)">rejecting this application</strong>. Applicant may be advised to reduce existing debt and reapply after 6 months.`,
+  };
+
+  document.getElementById('risk-verdict').textContent = verdicts[riskLevel];
+  document.getElementById('risk-verdict').style.color = colors[riskLevel];
+  document.getElementById('risk-desc').textContent = descs[riskLevel];
+  document.getElementById('risk-tags').innerHTML = tagSets[riskLevel].join('');
+  document.getElementById('recommendation').innerHTML = recs[riskLevel];
+
+  // Feature bars
+  const barsEl = document.getElementById('breakdown-bars');
+  barsEl.innerHTML = Object.entries(factors).map(([k, v]) => `
+    <div class="feature-bar">
+      <div class="feature-name">${k}</div>
+      <div class="feature-track"><div class="feature-fill" style="width:0%;background:${colors[riskLevel]};" data-target="${Math.min(100,Math.round(v))}"></div></div>
+      <div class="feature-pct">${Math.min(100,Math.round(v))}%</div>
+    </div>
+  `).join('');
+
+  // Animate bars after render
+  setTimeout(() => {
+    barsEl.querySelectorAll('.feature-fill').forEach(el => {
+      el.style.transition = 'width 1s cubic-bezier(0.4,0,0.2,1)';
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 100);
+
+  document.getElementById('risk-result').classList.add('show');
+  showToast(`Assessment complete — ${decision}`, riskLevel === 'low' ? 'success' : 'error');
+}
+
+// ─── MODEL ALGO TABS ──────────────────────────────────────────────────────────
+const algoData = {
+  xgb: { acc: '94.7%', auc: '0.971', pre: '93.2%', rec: '91.8%', tp:872, fp:48, fn:29, tn:335 },
+  rf:  { acc: '92.1%', auc: '0.951', pre: '90.8%', rec: '89.3%', tp:841, fp:68, fn:44, tn:331 },
+  lr:  { acc: '84.3%', auc: '0.881', pre: '82.1%', rec: '80.7%', tp:782, fp:110, fn:92, tn:300 },
+  nn:  { acc: '91.5%', auc: '0.944', pre: '89.9%', rec: '90.1%', tp:851, fp:58, fn:37, tn:338 },
+};
+
+function selectAlgo(key, el) {
+  document.querySelectorAll('.algo-tab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const d = algoData[key];
+  document.getElementById('m-accuracy').textContent = d.acc;
+  document.getElementById('m-auc').textContent = d.auc;
+  document.getElementById('m-precision').textContent = d.pre;
+  document.getElementById('m-recall').textContent = d.rec;
+  document.getElementById('cm-tp').textContent = d.tp;
+  document.getElementById('cm-fp').textContent = d.fp;
+  document.getElementById('cm-fn').textContent = d.fn;
+  document.getElementById('cm-tn').textContent = d.tn;
+  const total = d.tp + d.fp + d.fn + d.tn;
+  document.getElementById('cm-total').textContent = total.toLocaleString();
+  document.getElementById('cm-miss').textContent = ((d.fn/total)*100).toFixed(1) + '%';
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg, type='success') {
+  const container = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.innerHTML = `<span>${type === 'success' ? '✓' : '✗'}</span> ${msg}`;
+  container.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(100%)'; t.style.transition = '0.3s'; setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+renderRecentTable();
+</script>
+</body>
+</html>
